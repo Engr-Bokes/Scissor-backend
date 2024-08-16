@@ -1,0 +1,63 @@
+{
+  "name": "scissor-backend",
+  "version": "1.0.0",
+  "description": "Backend for Scissor URL Shortene",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "nodemon src/server.ts",
+    "preinstall": "npx npm-force-resolutions",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "axios": "^1.7.4",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.3",
+    "nanoid": "^5.0.7",
+    "qrcode": "^1.5.4",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/preset-typescript": "^7.24.7",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/express-rate-limit": "^6.0.0",
+    "@types/jest": "^29.5.12",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.3.0",
+    "@types/supertest": "^6.0.2",
+    "babel-jest": "^29.7.0",
+    "express-rate-limit": "^7.4.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "npm-force-resolutions": "^0.0.10",
+    "rate-limit-redis": "^4.2.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "overrides": {
+    "glob": "^9.0.0",
+    "inflight": "2.0.0"
+  },
+  "babel": {
+    "presets": [
+      ["@babel/preset-env", {}],
+      "@babel/preset-typescript"
+    ]
+  }
+}
