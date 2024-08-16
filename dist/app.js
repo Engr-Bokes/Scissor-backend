@@ -5,10 +5,15 @@ import urlRoutes from './routes/urlRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import rateLimiter from './middleware/rateLimiter.js';
 import { connectRedis } from './utils/redisClient.js'; // Import the connectRedis function
+import { limiter, configureApp } from './middleware/rateLimiter.js';
+
 dotenv.config();
+
 const app = express();
+
+configureApp(app);
+
 // Connect to Redis
 connectRedis();
 const corsOptions = {
@@ -17,7 +22,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
-app.use(rateLimiter); // Apply rate limiter middleware globally
+app.use(limiter); // Apply rate limiter middleware globally
 const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://Chibuokem:BokesCrush1@firstcluster.mfzoh4u.mongodb.net/scissor?retryWrites=true&w=majority&appName=FirstCluster';
 mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 30000, // 30 seconds timeout
