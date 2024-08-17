@@ -7,13 +7,9 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { connectRedis } from './utils/redisClient.js'; // Import the connectRedis function
 import { limiter, configureApp } from './middleware/rateLimiter.js';
-
 dotenv.config();
-
 const app = express();
-
 configureApp(app);
-
 // Connect to Redis
 connectRedis();
 const corsOptions = {
