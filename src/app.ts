@@ -23,7 +23,7 @@ configureApp(app);
 await connectRedis();
 
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'https://scissor-url-shortner.hostless.app',
     optionsSuccessStatus: 200,
 };
 
