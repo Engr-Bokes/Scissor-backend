@@ -2,15 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
-import { fileURLToPath } from 'url'; // Import these to define __dirname in ES module
+import { fileURLToPath } from 'url';
 import urlRoutes from './routes/urlRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { connectRedis } from './utils/redisClient.js';
-import { limiter, configureApp } from './middleware/rateLimiter.js';
+import { limiter, configureApp, rateLimiter } from './middleware/rateLimiter.js';
+import { redirectToOriginalUrl } from './controllers/urlController.js'; // Import the redirect controller
 dotenv.config();
-// Define __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -31,13 +31,16 @@ mongoose.connect(mongoUri, {
 })
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error('MongoDB connection error:', err));
-app.use('/api', urlRoutes);
+app.use('/api', urlRoutes); // Keep the API routes under /api
 app.use('/auth', authRoutes);
-// Enhanced error handling middleware
+// Apply rate limiter and handle the shortened URL redirection without the /api prefix
+app.get('/:code', rateLimiter(20, 1), redirectToOriginalUrl); // 10 requests per minute
+// Enhanced error handling middleware for 500 errors
 app.use((err, req, res, next) => {
     console.error('An error occurred:', err.stack);
     res.status(500).redirect(`/error.html?status=500&message=${encodeURIComponent(err.message)}`);
 });
+// 404 Handling - Ensure this is after all routes
 app.use((req, res) => {
     res.status(404).redirect('/error.html?status=404&message=Route%20not%20found');
 });
