@@ -46,7 +46,7 @@ app.use('/api', urlRoutes); // Keep the API routes under /api
 app.use('/auth', authRoutes);
 
 // Apply rate limiter and handle the shortened URL redirection without the /api prefix
-app.get('/:code', rateLimiter(20, 1), redirectToOriginalUrl); // 10 requests per minute
+app.get('/:code', rateLimiter(50, 1), redirectToOriginalUrl); // 50 requests per minute
 
 // Enhanced error handling middleware for 500 errors
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
