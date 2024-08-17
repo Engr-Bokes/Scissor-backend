@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .error-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            display: inline-block;
+            margin: 20px auto;
+        }
+        h1 {
+            color: red;
+        }
+        p {
+            margin: 10px 0;
+        }
+        a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error: <span id="status-code"></span></h1>
+        <p id="error-message"></p>
+        <p><a href="/">Return to Home</a></p>
+    </div>
+
+    <script>
+        const statusCode = new URLSearchParams(window.location.search).get('status');
+        const message = new URLSearchParams(window.location.search).get('message');
+
+        document.getElementById('status-code').innerText = statusCode || 'Unknown';
+        document.getElementById('error-message').innerText = decodeURIComponent(message || 'An unexpected error occurred.');
+    </script>
+</body>
+</html>
