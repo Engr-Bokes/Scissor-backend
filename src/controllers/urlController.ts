@@ -4,7 +4,6 @@ import { UrlModel } from '../models/urlModel';
 
 export const shortenUrl = async (req: Request, res: Response) => {
     const { originalUrl, customUrl } = req.body;
-
     const userId = req.user?.id;
 
     if (!userId || typeof userId !== 'string') {
@@ -45,7 +44,7 @@ export const getUserUrls = async (req: Request, res: Response) => {
     }
 };
 
-// Add the redirectToOriginalUrl function
+// Updated redirectToOriginalUrl function for redirection
 export const redirectToOriginalUrl = async (req: Request, res: Response) => {
     const { code } = req.params;
 
@@ -53,6 +52,11 @@ export const redirectToOriginalUrl = async (req: Request, res: Response) => {
         const originalUrl = await getUrlByShortId(code);
 
         if (originalUrl) {
+            // Increment the click count and update last accessed time
+            await UrlModel.findOneAndUpdate(
+                { urlCode: code },
+                { $inc: { clicks: 1 }, lastAccessed: new Date() }
+            );
             res.redirect(originalUrl);
         } else {
             res.status(404).send('URL not found');

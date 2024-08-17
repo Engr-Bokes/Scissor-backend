@@ -37,12 +37,14 @@ export const getUserUrls = async (req, res) => {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
-// Add the redirectToOriginalUrl function
+// Updated redirectToOriginalUrl function for redirection
 export const redirectToOriginalUrl = async (req, res) => {
     const { code } = req.params;
     try {
         const originalUrl = await getUrlByShortId(code);
         if (originalUrl) {
+            // Increment the click count and update last accessed time
+            await UrlModel.findOneAndUpdate({ urlCode: code }, { $inc: { clicks: 1 }, lastAccessed: new Date() });
             res.redirect(originalUrl);
         }
         else {
