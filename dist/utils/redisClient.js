@@ -1,7 +1,7 @@
 import { createClient } from 'redis';
 import dotenv from 'dotenv';
 dotenv.config();
-const redisUrl = process.env.REDIS_URL || 'rediss://red-cqvsa7jqf0us73brkid0:Kn4puOcedd0Dhzp79P3s0gbfPCvHTihM@oregon-redis.render.com:6379';
+const redisUrl = process.env.REDIS_URL || 'redis://default:CntNvqNcCJwiSFHFIXcIXVOArPpapUVG@junction.proxy.rlwy.net:59640';
 console.log(`Connecting to Redis URL: ${redisUrl}`);
 const redisClient = createClient({
     url: redisUrl,
