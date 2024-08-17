@@ -1,31 +1,48 @@
-import { createClient } from 'redis';
+import { createClient } from 'redis'; // Import RedisClientType
 import dotenv from 'dotenv';
 dotenv.config();
 const redisUrl = process.env.REDIS_URL || 'redis://default:CntNvqNcCJwiSFHFIXcIXVOArPpapUVG@junction.proxy.rlwy.net:59640';
 console.log(`Connecting to Redis URL: ${redisUrl}`);
-const redisClient = createClient({
-    url: redisUrl,
-    socket: {
-        reconnectStrategy: retries => Math.min(retries * 50, 2000),
-    },
-});
-redisClient.on('connect', () => console.log('Connected to Redis'));
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
-const connectRedis = async () => {
-    try {
-        await redisClient.connect();
+let redisClient;
+const createRedisClient = () => {
+    if (!redisClient) {
+        redisClient = createClient({
+            url: redisUrl,
+            socket: {
+                reconnectStrategy: (retries) => Math.min(retries * 50, 2000),
+            },
+        });
+        redisClient.on('connect', () => console.log('Connected to Redis'));
+        redisClient.on('error', (err) => console.error('Redis Client Error', err));
     }
-    catch (err) {
-        console.error('Failed to connect to Redis', err);
+    return redisClient;
+};
+const connectRedis = async () => {
+    if (!redisClient || !redisClient.isOpen) {
+        try {
+            redisClient = createRedisClient();
+            await redisClient.connect();
+        }
+        catch (err) {
+            console.error('Failed to connect to Redis', err);
+        }
+    }
+    else {
+        console.log('Redis connection already established');
     }
 };
 const disconnectRedis = async () => {
-    try {
-        await redisClient.quit();
-        console.log('Disconnected from Redis');
+    if (redisClient && redisClient.isOpen) {
+        try {
+            await redisClient.quit();
+            console.log('Disconnected from Redis');
+        }
+        catch (err) {
+            console.error('Failed to disconnect from Redis', err);
+        }
     }
-    catch (err) {
-        console.error('Failed to disconnect from Redis', err);
+    else {
+        console.log('Redis connection is not open or already closed');
     }
 };
 export { redisClient, connectRedis, disconnectRedis };

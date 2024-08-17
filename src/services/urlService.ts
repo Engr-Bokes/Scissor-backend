@@ -2,17 +2,32 @@ import { UrlModel } from '../models/urlModel';
 import { nanoid } from 'nanoid';
 import { redisClient } from '../utils/redisClient';
 import axios from 'axios';
+import validator from 'validator'; // Import validator for URL validation
+import { RedisClientType } from 'redis'; // Import the RedisClientType for type checking
+
+// Helper function to ensure redisClient is initialized
+const ensureRedisClient = (): RedisClientType => {
+    if (!redisClient) {
+        throw new Error('Redis client is not initialized');
+    }
+    return redisClient;
+};
 
 // Function to create a short URL
 export const createShortUrl = async (originalUrl: string, userId: string, customUrl?: string) => {
+    // Validate the original URL
+    if (!validator.isURL(originalUrl, { protocols: ['http', 'https'], require_protocol: true })) {
+        throw new Error('Invalid URL provided');
+    }
+
     const urlCode = customUrl || nanoid(7);
-    const baseUrl = process.env.BASE_URL || 'http://localhost:8000';
+    const baseUrl = process.env.BASE_URL || 'https://scissor-backend.hostless.app';
     const shortUrl = `${baseUrl}/${urlCode}`;
 
     const urlData = new UrlModel({ originalUrl, shortUrl, urlCode, user: userId });
     await urlData.save();
 
-    await redisClient.set(urlCode, originalUrl);
+    await ensureRedisClient().set(urlCode, originalUrl);
 
     const qrCode = await generateQrCode(shortUrl);
 
@@ -38,7 +53,7 @@ export const getAnalytics = async (code: string) => {
 // Function to retrieve the original URL by short ID (urlCode)
 export const getUrlByShortId = async (urlCode: string): Promise<string | null> => {
     // Check if the URL is cached in Redis
-    const cachedUrl = await redisClient.get(urlCode);
+    const cachedUrl = await ensureRedisClient().get(urlCode);
     if (cachedUrl) {
         return cachedUrl;
     }
@@ -47,7 +62,7 @@ export const getUrlByShortId = async (urlCode: string): Promise<string | null> =
     const urlRecord = await UrlModel.findOne({ urlCode });
     if (urlRecord) {
         // Cache the original URL in Redis for future requests
-        await redisClient.set(urlCode, urlRecord.originalUrl);
+        await ensureRedisClient().set(urlCode, urlRecord.originalUrl);
         return urlRecord.originalUrl;
     }
 

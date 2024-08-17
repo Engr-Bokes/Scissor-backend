@@ -2,25 +2,32 @@ import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redisClient, connectRedis } from '../utils/redisClient';
 import { Request, Application } from 'express';
+import { RedisClientType } from 'redis'; // Import RedisClientType for type safety
 
-// Ensure Redis is connected before creating the rate limiter
-const ensureRedisConnected = async (): Promise<void> => {
-    if (!redisClient.isOpen) {
+// Helper function to ensure redisClient is connected and initialized
+const ensureRedisClient = async (): Promise<RedisClientType> => {
+    if (!redisClient) {
         await connectRedis();
     }
+
+    // After attempting to connect, check again
+    if (!redisClient) {
+        throw new Error('Redis client is not initialized');
+    }
+
+    return redisClient;
 };
 
-// Immediately ensure Redis connection
-(async () => {
-    await ensureRedisConnected();
-})();
-
+// Global rate limiter
 const limiter: RateLimitRequestHandler = rateLimit({
     store: new RedisStore({
-        sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+        sendCommand: async (...args: string[]) => {
+            const client = await ensureRedisClient();
+            return client.sendCommand(args);
+        },
     }),
-    windowMs: 15 * 60 * 1000, 
-    max: 100, 
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
@@ -29,9 +36,30 @@ const limiter: RateLimitRequestHandler = rateLimit({
     },
 });
 
-const configureApp = (app: Application): void => {
-    app.set('trust proxy', true); // Ensure the trust proxy setting is enabled
-    app.use(limiter); // Apply the rate limiter middleware
+// Custom rate limiter for specific routes
+const rateLimiter = (max: number, minutes: number): RateLimitRequestHandler => {
+    return rateLimit({
+        store: new RedisStore({
+            sendCommand: async (...args: string[]) => {
+                const client = await ensureRedisClient();
+                return client.sendCommand(args);
+            },
+        }),
+        windowMs: minutes * 60 * 1000, // custom window in minutes
+        max, // limit each IP to `max` requests per windowMs
+        message: 'Too many requests, please try again later.',
+        standardHeaders: true,
+        legacyHeaders: false,
+        keyGenerator: (req: Request): string => {
+            return req.ip || ''; // Ensure a string is always returned
+        },
+    });
 };
 
-export { limiter, configureApp };
+// Function to configure the global rate limiter on the app
+const configureApp = (app: Application): void => {
+    app.set('trust proxy', true); // Ensure the trust proxy setting is enabled
+    app.use(limiter); // Apply the global rate limiter middleware
+};
+
+export { limiter, configureApp, rateLimiter };
