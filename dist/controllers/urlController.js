@@ -1,10 +1,8 @@
-import { createShortUrl, getAnalytics } from '../services/urlService.js';
+import { createShortUrl, getAnalytics, getUrlByShortId } from '../services/urlService.js';
 import { UrlModel } from '../models/urlModel.js';
 export const shortenUrl = async (req, res) => {
     const { originalUrl, customUrl } = req.body;
-    // Ensure req.user is defined and has a valid id
     const userId = req.user?.id;
-    // Check if userId is a string, otherwise return an error
     if (!userId || typeof userId !== 'string') {
         return res.status(400).json({ message: 'Invalid user ID in token' });
     }
@@ -27,15 +25,29 @@ export const getUrlAnalytics = async (req, res) => {
     }
 };
 export const getUserUrls = async (req, res) => {
-    // Ensure req.user is defined and has a valid id
     const userId = req.user?.id;
-    // Check if userId is a string, otherwise return an error
     if (!userId || typeof userId !== 'string') {
         return res.status(400).json({ message: 'Invalid user ID in token' });
     }
     try {
         const urls = await UrlModel.find({ user: userId });
         res.status(200).json(urls);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Server Error', error });
+    }
+};
+// Add the redirectToOriginalUrl function
+export const redirectToOriginalUrl = async (req, res) => {
+    const { code } = req.params;
+    try {
+        const originalUrl = await getUrlByShortId(code);
+        if (originalUrl) {
+            res.redirect(originalUrl);
+        }
+        else {
+            res.status(404).send('URL not found');
+        }
     }
     catch (error) {
         res.status(500).json({ message: 'Server Error', error });

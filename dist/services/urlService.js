@@ -2,6 +2,7 @@ import { UrlModel } from '../models/urlModel.js';
 import { nanoid } from 'nanoid';
 import { redisClient } from '../utils/redisClient.js';
 import axios from 'axios';
+// Function to create a short URL
 export const createShortUrl = async (originalUrl, userId, customUrl) => {
     const urlCode = customUrl || nanoid(7);
     const baseUrl = process.env.BASE_URL || 'http://localhost:8000';
@@ -12,6 +13,7 @@ export const createShortUrl = async (originalUrl, userId, customUrl) => {
     const qrCode = await generateQrCode(shortUrl);
     return { shortUrl, qrCode };
 };
+// Function to get analytics for a short URL
 export const getAnalytics = async (code) => {
     const url = await UrlModel.findOne({ urlCode: code });
     if (url) {
@@ -24,6 +26,23 @@ export const getAnalytics = async (code) => {
     }
     throw new Error('URL not found');
 };
+// Function to retrieve the original URL by short ID (urlCode)
+export const getUrlByShortId = async (urlCode) => {
+    // Check if the URL is cached in Redis
+    const cachedUrl = await redisClient.get(urlCode);
+    if (cachedUrl) {
+        return cachedUrl;
+    }
+    // If not found in Redis, check the database
+    const urlRecord = await UrlModel.findOne({ urlCode });
+    if (urlRecord) {
+        // Cache the original URL in Redis for future requests
+        await redisClient.set(urlCode, urlRecord.originalUrl);
+        return urlRecord.originalUrl;
+    }
+    return null;
+};
+// Function to generate a QR code for the short URL
 const generateQrCode = async (url) => {
     try {
         const response = await axios.get('https://api.qrserver.com/v1/create-qr-code/', {
