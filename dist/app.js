@@ -17,7 +17,7 @@ const app = express();
 configureApp(app);
 await connectRedis();
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'https://sus.hostless.app',
     optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
