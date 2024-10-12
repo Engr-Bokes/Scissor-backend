@@ -21,7 +21,7 @@ export const createShortUrl = async (originalUrl: string, userId: string, custom
     }
 
     const urlCode = customUrl || nanoid(7);
-    const baseUrl = process.env.BASE_URL || 'https://sus-backend.hostless.app';
+    const baseUrl = process.env.BASE_URL || 'https://sus.hostless.app';
     const shortUrl = `${baseUrl}/${urlCode}`;
 
     const urlData = new UrlModel({ originalUrl, shortUrl, urlCode, user: userId });

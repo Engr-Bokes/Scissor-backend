@@ -23,7 +23,7 @@ configureApp(app);
 await connectRedis();
 
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'https://sus.hostless.app',
+    origin: process.env.FRONTEND_URL || 'https://scissor.hostless.app',
     optionsSuccessStatus: 200,
 };
 
