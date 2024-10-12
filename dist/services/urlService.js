@@ -17,7 +17,7 @@ export const createShortUrl = async (originalUrl, userId, customUrl) => {
         throw new Error('Invalid URL provided');
     }
     const urlCode = customUrl || nanoid(7);
-    const baseUrl = process.env.BASE_URL || 'https://scissor-backend.hostless.app';
+    const baseUrl = process.env.BASE_URL || 'https://sus-backend.hostless.app';
     const shortUrl = `${baseUrl}/${urlCode}`;
     const urlData = new UrlModel({ originalUrl, shortUrl, urlCode, user: userId });
     await urlData.save();
